@@ -1,6 +1,6 @@
 import React from "react";
 import Hat from "../assets/HatChain.png";
-import SKY from "../assets/SKY.png";
+import SKY from "../assets/Sky.png";
 import ModelLeft from "../assets/ModelLeft.png";
 import ModelRight from "../assets/ModelRight.png";
 import ModelBack from "../assets/ModelBack.png";
