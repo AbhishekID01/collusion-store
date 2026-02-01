@@ -1,5 +1,4 @@
 import React from "react";
-import BlackDress from "../assets/BlackDress.png";
 
 const About = () => {
   return (
@@ -11,7 +10,7 @@ const About = () => {
       <div className="w-full mx-auto grid grid-cols-1 md:grid-cols-2 border-t">
         <div className="flex items-center justify-center border-r">
           <img
-            src={BlackDress}
+            src="/BlackDress.webp"
             alt="About our brand"
             className="w-full h-[400px] md:h-[500px] object-cover"
           />

@@ -1,47 +1,89 @@
-import React, { useState } from "react";
-import { useProductContext } from "../context/productContext";
+import React, { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
+import { fetchProducts } from "../api/products";
+
+const mapColorName = (hex = "") => {
+  const colorMap = {
+    "#000000": "black",
+    "#ffffff": "white",
+    "#ff0000": "red",
+    "#008000": "green",
+    "#2f4f4f": "gray",
+  };
+  return colorMap[hex.toLowerCase()] || hex;
+};
 
 const CatalogPage = () => {
-  const { isLoading, products } = useProductContext();
+  /* =========================
+     1️⃣ ALL HOOKS FIRST
+  ========================= */
 
-  // helper function to map hex → color name
-  const mapColorName = (hex) => {
-    const colorMap = {
-      "#000000": "black",
-      "#ffffff": "white",
-      "#ff0000": "red",
-      "#008000": "green",
-      "#2f4f4f": "gray",
-    };
-    return colorMap[hex.toLowerCase()] || hex;
-  };
+  const {
+    data: products = [],
+    isLoading,
+    isError,
+  } = useQuery({
+    queryKey: ["products"],
+    queryFn: fetchProducts,
+    staleTime: 1000 * 60 * 5,
+    refetchOnWindowFocus: false,
+  });
 
-  // filter states
   const [selectedCategory, setSelectedCategory] = useState("");
   const [selectedCollection, setSelectedCollection] = useState("");
   const [selectedColor, setSelectedColor] = useState("");
   const [selectedSize, setSelectedSize] = useState("");
 
+  const filteredProducts = useMemo(() => {
+    return products.filter((item) => {
+      return (
+        (!selectedCategory ||
+          item.gender?.toLowerCase() === selectedCategory.toLowerCase()) &&
+        (!selectedCollection ||
+          item.collection?.toLowerCase() ===
+            selectedCollection.toLowerCase()) &&
+        (!selectedColor ||
+          item.colors?.some(
+            (c) =>
+              mapColorName(c).toLowerCase() ===
+              selectedColor.toLowerCase()
+          )) &&
+        (!selectedSize ||
+          item.size?.toLowerCase() === selectedSize.toLowerCase())
+      );
+    });
+  }, [
+    products,
+    selectedCategory,
+    selectedCollection,
+    selectedColor,
+    selectedSize,
+  ]);
+
+  /* =========================
+     2️⃣ CONDITIONAL RETURNS
+  ========================= */
+
   if (isLoading) {
-    return <p className="text-center py-10 text-lg font-medium">Loading...</p>;
+    return (
+      <p className="text-center py-10 text-lg font-medium">
+        Loading products...
+      </p>
+    );
   }
 
-  // filtering logic
-  const filteredProducts = products.filter((item) => {
+  if (isError) {
     return (
-      (!selectedCategory ||
-        item.gender?.toLowerCase() === selectedCategory.toLowerCase()) &&
-      (!selectedCollection ||
-        item.collection?.toLowerCase() === selectedCollection.toLowerCase()) &&
-      (!selectedColor ||
-        item.colors?.some(
-          (c) => mapColorName(c).toLowerCase() === selectedColor.toLowerCase()
-        )) &&
-      (!selectedSize ||
-        item.size?.toLowerCase() === selectedSize.toLowerCase())
+      <p className="text-center py-10 text-red-500">
+        Error loading products
+      </p>
     );
-  });
+  }
+
+  /* =========================
+     3️⃣ JSX
+  ========================= */
 
   return (
     <section className="w-full">
@@ -50,28 +92,27 @@ const CatalogPage = () => {
         <aside className="col-span-1 border-r p-6 space-y-6 bg-white">
           <h2 className="text-lg font-bold">CATALOG</h2>
 
-          {/* Category Select */}
+          {/* Category */}
           <div>
             <h3 className="font-semibold text-sm mb-2">Category</h3>
             <select
               value={selectedCategory}
               onChange={(e) => setSelectedCategory(e.target.value)}
-              className="w-full border  p-2 text-sm"
+              className="w-full border p-2 text-sm"
             >
               <option value="">All</option>
               <option value="Male">Men</option>
               <option value="Female">Women</option>
-              <option value="">Unisex</option>
             </select>
           </div>
 
-          {/* Collection Select */}
+          {/* Collection */}
           <div>
             <h3 className="font-semibold text-sm mb-2">Collection</h3>
             <select
               value={selectedCollection}
               onChange={(e) => setSelectedCollection(e.target.value)}
-              className="w-full border  p-2 text-sm"
+              className="w-full border p-2 text-sm"
             >
               <option value="">All</option>
               <option value="Spring">Spring</option>
@@ -80,13 +121,13 @@ const CatalogPage = () => {
             </select>
           </div>
 
-          {/* Color Select */}
+          {/* Color */}
           <div>
             <h3 className="font-semibold text-sm mb-2">Color</h3>
             <select
               value={selectedColor}
               onChange={(e) => setSelectedColor(e.target.value)}
-              className="w-full border  p-2 text-sm"
+              className="w-full border p-2 text-sm"
             >
               <option value="">All</option>
               <option value="Black">Black</option>
@@ -96,13 +137,13 @@ const CatalogPage = () => {
             </select>
           </div>
 
-          {/* Size Select */}
+          {/* Size */}
           <div>
             <h3 className="font-semibold text-sm mb-2">Size</h3>
             <select
               value={selectedSize}
               onChange={(e) => setSelectedSize(e.target.value)}
-              className="w-full border  p-2 text-sm"
+              className="w-full border p-2 text-sm"
             >
               <option value="">All</option>
               <option value="S">S</option>
@@ -112,7 +153,6 @@ const CatalogPage = () => {
             </select>
           </div>
 
-          {/* Reset Filters */}
           <button
             onClick={() => {
               setSelectedCategory("");
@@ -120,30 +160,36 @@ const CatalogPage = () => {
               setSelectedColor("");
               setSelectedSize("");
             }}
-            className="mt-4 text-xs text-white bg-red-500 p-4 rounded cursor-pointer"
+            className="mt-4 text-xs text-white bg-red-500 p-4 rounded"
           >
             Reset Filters
           </button>
         </aside>
 
-        {/* Products Grid */}
+        {/* Products */}
         <div className="col-span-3 p-6">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 border-t border-l">
-            {filteredProducts.length > 0 ? (
+            {filteredProducts.length ? (
               filteredProducts.map((item) => (
                 <Link
-                  to={`/singleProduct/${item.id}`}
                   key={item.id}
+                  to={`/singleProduct/${item.id}`}
                   className="border-r border-b group"
                 >
                   <img
                     src={item.image}
                     alt={item.name}
+                    loading="lazy"
+                    decoding="async"
                     className="w-full h-[280px] object-cover"
                   />
                   <div className="p-4">
-                    <h3 className="text-sm font-semibold p-2">{item.name}</h3>
-                    <p className="text-gray-600 text-sm p-2">₹{item.price}</p>
+                    <h3 className="text-sm font-semibold">
+                      {item.name}
+                    </h3>
+                    <p className="text-gray-600 text-sm">
+                      ₹{item.price}
+                    </p>
                   </div>
                 </Link>
               ))

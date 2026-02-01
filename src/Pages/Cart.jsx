@@ -1,6 +1,6 @@
 import React from "react";
 import { useCartContext } from "../context/CartContext";
-import { Trash2 } from "lucide-react"; // 🗑️ icon (optional if you use lucide-react)
+import { Trash2 } from "lucide-react"; 
 
 const CartPage = () => {
   const { cartItems, removeFromCart } = useCartContext();

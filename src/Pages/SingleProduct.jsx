@@ -1,11 +1,24 @@
 import React from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { useProductContext } from "../context/productContext";
+// import { useProductContext } from "../context/productContext";
 import { useCartContext } from "../context/CartContext";
+import { useQuery } from "@tanstack/react-query";
+import { fetchProducts } from "../api/products";
 
 const SingleProduct = () => {
   const { id } = useParams();
-  const { products, isLoading } = useProductContext();
+  // const { products, isLoading } = useProductContext();
+  const {
+    data: products,
+    isLoading,
+    isError,
+  } = useQuery({
+    queryKey: ["products"],
+    queryFn: fetchProducts,
+    staleTime: 1000 * 60 * 5,
+    refetchOnWindowFocus: false,
+  });
+
   const { addToCart } = useCartContext();
   const navigate = useNavigate();
 
@@ -13,7 +26,15 @@ const SingleProduct = () => {
     return <p className="text-center py-10 text-lg font-medium">Loading...</p>;
   }
 
-  const product = products.find((item) => String(item.id) === id);
+  if (isError) {
+    return (
+      <p className="text-center py-10 text-lg text-red-500">
+        Failed to load product
+      </p>
+    );
+  }
+
+  const product = (products || []).find((item) => String(item.id) === id);
 
   if (!product) {
     return (
@@ -36,6 +57,8 @@ const SingleProduct = () => {
           <img
             src={product.image}
             alt={product.name}
+            loading="eager"
+            decoding="async"
             className="w-full h-full object-cover border"
           />
         </div>

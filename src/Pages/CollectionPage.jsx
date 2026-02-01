@@ -1,12 +1,33 @@
-import React from "react";
-import { useProductContext } from "../context/productContext";
+import React, { useMemo } from "react";
+// import { useProductContext } from "../context/productContext";
 import { Link } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
+import { fetchProducts } from "../api/products";
 
 const CollectionPage = () => {
-  const { isLoading, featureProducts } = useProductContext();
+  // const { isLoading, featureProducts } = useProductContext();
+  const {
+    data: products,
+    isLoading,
+    isError,
+  } = useQuery({
+    queryKey: ["products"],
+    queryFn: fetchProducts,
+    staleTime: 1000 * 60 * 5,
+    refetchOnWindowFocus: false,
+  });
 
+  const featureProducts = useMemo(() => {
+    return (products || []).filter((item) => item.featured);
+  }, [products]);
   if (isLoading) {
     return <p className="text-center py-10 text-lg font-medium">Loading...</p>;
+  }
+
+  if (isError) {
+    return (
+      <p className="text-center py-10 text-red-500">Error loading products</p>
+    );
   }
 
   return (
@@ -30,13 +51,17 @@ const CollectionPage = () => {
               <img
                 src={featureProducts[0].image}
                 alt={featureProducts[0].name}
+                loading="lazy"
+                decoding="async"
                 className="h-[400px] md:h-[700px] w-full object-cover border-t"
               />
               <div className="p-6 border-t border-r">
                 <h3 className="text-sm md:text-base font-semibold">
                   {featureProducts[0].name}
                 </h3>
-                <p className="text-gray-600 text-sm">{featureProducts[0].price}</p>
+                <p className="text-gray-600 text-sm">
+                  {featureProducts[0].price}
+                </p>
               </div>
             </Link>
           )}
@@ -54,6 +79,8 @@ const CollectionPage = () => {
                   <img
                     src={item.image}
                     alt={item.name}
+                    loading="lazy"
+                    decoding="async"
                     className="w-full h-[200px] md:h-[300px] object-cover border"
                   />
                   <div className="p-7 border-r">
@@ -73,11 +100,17 @@ const CollectionPage = () => {
                 <img
                   src={featureProducts[3].image}
                   alt={featureProducts[3].name}
+                  loading="lazy"
+                  decoding="async"
                   className="w-full h-[200px] md:h-[300px] object-cover border"
                 />
                 <div className="p-7">
-                  <h3 className="text-sm font-medium">{featureProducts[3].name}</h3>
-                  <p className="text-gray-600 text-sm">{featureProducts[3].price}</p>
+                  <h3 className="text-sm font-medium">
+                    {featureProducts[3].name}
+                  </h3>
+                  <p className="text-gray-600 text-sm">
+                    {featureProducts[3].price}
+                  </p>
                 </div>
               </Link>
             )}

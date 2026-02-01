@@ -1,6 +1,5 @@
 import React from "react";
 import HeroSec from "../assets/HeroSec.png";
-import HeroRight from "../assets/HeroRight.png";
 
 const Hero = () => {
   return (
@@ -9,9 +8,14 @@ const Hero = () => {
         {/* Left Side (Blue) */}
         <div className="relative flex items-center justify-center h-[50vh] md:h-full ">
           <img
-            src={HeroRight}
-            alt="Model Left"
-            className="h-full w-full object-cover"
+            src="/HeroRight.webp"
+            alt="Hero model"
+            width="1600"
+            height="900"
+            fetchPriority="high"
+            loading="eager"
+            decoding="async"
+            className="w-full h-full object-cover"
           />
           <button className="absolute bottom-6 left-6 bg-lime-300 px-4 py-2 text-sm md:text-base font-semibold shadow-md m-10 cursor-pointer">
             CHECK NEW ARRIVALS
@@ -32,8 +36,13 @@ const Hero = () => {
           </p>
 
           <img
-            src={HeroSec}
+            src="/HeroSec.webp"
             alt="Model Right"
+             width="1600"
+            height="900"
+            fetchPriority="high"
+            loading="eager"
+            decoding="async"
             className="absolute top-0 right-0 h-full w-full object-cover"
           />
         </div>
